@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Fortune</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+        }
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+        .wheel div {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            background: #fff;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 2;
+            font-size: 14px;
+            transform-origin: 100% 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .prize_1{
+            background: #f44336;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_2{
+            background: #e91e63;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_3{
+            background: #9c27b0;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_4{
+            background: #673ab7;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_5{
+            background: #3f51b5;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_6{
+            background: #2196f3;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_7{
+            background: #03a9f4;
+            width: 100px;
+            height: 100px;
+        }
+        .prize_8{
+            background: #00bcd4;
+            width: 100px;
+            height: 100px;
+        }
+
+        .container{
+        display: flex;
+        margin-bottom: 60px;
+        }
+
+        .wheel div:nth-child(1) { background: #f44336; transform: rotate(0deg); }
+        .wheel div:nth-child(2) { background: #e91e63; transform: rotate(45deg); }
+        .wheel div:nth-child(3) { background: #9c27b0; transform: rotate(90deg); }
+        .wheel div:nth-child(4) { background: #673ab7; transform: rotate(135deg); }
+        .wheel div:nth-child(5) { background: #3f51b5; transform: rotate(180deg); }
+        .wheel div:nth-child(6) { background: #2196f3; transform: rotate(225deg); }
+        .wheel div:nth-child(7) { background: #03a9f4; transform: rotate(270deg); }
+        .wheel div:nth-child(8) { background: #00bcd4; transform: rotate(315deg); }
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 20px 40px 20px;
+            border-color: transparent transparent white transparent;
+            transform: translateX(-50%);
+        }
+        .spin-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .balance-container, .result-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back{
+        margin-left: 50px;
+        margin-top: 50px;
+        
+        text-decoration: none;
+        color: #a9f800;
+        }
+    </style>
+</head>
+<body>
+    
+    <a href="4_page.html" class="back">Назад</a>
+    <div class="container">
+        <div class="prize_1">1</div>
+        <div class="prize_2">2</div>
+        <div class="prize_3">3</div>
+        <div class="prize_4">4</div>
+        <div class="prize_5">5</div>
+        <div class="prize_6">6</div>
+        <div class="prize_7">7</div>
+        <div class="prize_8">8</div>
+    </div>
+    <div class="wheel-container">
+        <div class="wheel" id="wheel">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="pointer"></div>
+    </div>
+    <button class="spin-button" onclick="spinWheel()">Spin</button>
+    <div class="balance-container">
+        <h2>Баланс: <span id="balance">1000</span></h2>
+    </div>
+    <div class="result-container">
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        let balance = 1000;
+
+        function updateBalance(amount) {
+            balance += amount;
+            document.getElementById('balance').innerText = balance;
+        }
+
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const randomDegree = Math.floor(Math.random() * 360) + 360 * 3; 
+            wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+            const prizes = ['Приз 1', 'Приз 2', 'Приз 3', 'Приз 4', 'Приз 5', 'Приз 6', 'Приз 7', 'Приз 8'];
+            const prizeValues = [100, 200, 300, 400, 500, 600, 700, 800];
+            const prizeIndex = (8 - Math.floor((randomDegree % 360) / 45)) % 8;
+
+            setTimeout(() => {
+                const prize = prizes[prizeIndex];
+                const prizeValue = prizeValues[prizeIndex];
+                document.getElementById('result').innerText = `Ты выйграл ${prize}!`;
+                updateBalance(prizeValue);
+            }, 4000); 
+        }
+    </script>
+</body>
+</html>

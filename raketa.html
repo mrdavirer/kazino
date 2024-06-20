@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket Game</title>
+    <style>
+        .rocketChart{
+        background-color: aliceblue;
+        color: aliceblue;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #3F008E;
+            color: white;
+        }
+        .game-container {
+            text-align: center;
+        }
+        .rocket {
+            width: 50px;
+            position: absolute;
+            transition: transform 0.1s linear;
+        }
+        .input-container {
+            margin: 20px 0;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .balance {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            height: 500px;
+            margin-top: 20px;
+            position: relative;
+        }
+        input[type="number"] {
+            margin: 0 5px;
+            padding: 5px;
+        }
+        .back{
+        margin-left: 50px;
+        margin-top: 50px;
+        
+        text-decoration: none;
+        color: #a9f800;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <a href="4_page.html" class="back">Назад</a>
+    <div class="game-container">
+        <h1>Ракетка</h1>
+        <div class="balance" id="balance">Баланс: 1000</div>
+        <div class="input-container">
+            <input type="number" id="bet" placeholder="Введите сумму" step="0.01" min="0">
+            <input type="number" id="coefficient" placeholder="Введите коэффицент" step="0.01" min="0">
+            <button onclick="placeBet()">Испытать удачу</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="chart-container">
+            <canvas id="rocketChart"></canvas>
+            <img src="rocket.png" alt="Rocket" class="rocket" id="rocket">
+        </div>
+    </div>
+
+    <script>
+        let balance = 1000;
+        let rocketChart;
+        let chartData = [];
+        let rocketImage;
+
+        function updateBalance(amount) {
+            balance += amount;
+            document.getElementById('balance').innerText = `Баланс: ${balance.toFixed(2)}`;
+        }
+
+        function getRandomCoefficient() {
+            return (Math.random() * 10).toFixed(2); // Random coefficient between 0 and 10
+        }
+
+        function createChart() {
+            const ctx = document.getElementById('rocketChart').getContext('2d');
+            rocketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'График',
+                        data: chartData,
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                color: 'white' // Color of y-axis ticks
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)' // Color of y-axis grid lines
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white' // Color of x-axis ticks
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)' // Color of x-axis grid lines
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white' // Color of the legend text
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        function updateChart(coefficient) {
+            const labelsLength = rocketChart.data.labels.length;
+            rocketChart.data.labels.push(labelsLength + 1);
+            rocketChart.data.datasets[0].data.push(coefficient);
+            rocketChart.update();
+
+            // Update rocket position
+            const maxHeight = document.querySelector('.chart-container').clientHeight;
+            const positionY = maxHeight - (maxHeight * (coefficient / 10));
+            rocketImage.style.transform = `translateY(${positionY}px)`;
+        }
+
+        function placeBet() {
+            const bet = parseFloat(document.getElementById('bet').value);
+            const userCoefficient = parseFloat(document.getElementById('coefficient').value);
+            if (isNaN(bet) || bet <= 0 || isNaN(userCoefficient) || userCoefficient <= 0 || bet > balance) {
+                alert('Пожалуйста пополните свой баланс чтобы продолжить играть.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            const randomCoefficient = parseFloat(getRandomCoefficient());
+
+            chartData = [];
+            rocketChart.data.labels = [];
+            rocketChart.data.datasets[0].data = [];
+            updateChart(0);
+
+            let currentCoefficient = 0;
+            const interval = setInterval(() => {
+                currentCoefficient += 0.1;
+                updateChart(currentCoefficient.toFixed(1));
+                if (currentCoefficient >= randomCoefficient) {
+                    clearInterval(interval);
+                }
+            }, 100);
+
+            setTimeout(() => {
+                if (userCoefficient <= randomCoefficient) {
+                    const winnings = bet * userCoefficient;
+                    updateBalance(winnings);
+                    resultDiv.innerHTML = `Поздраляем! Ракета дошла до ${randomCoefficient}. Ты выйграл ${winnings.toFixed(2)}!`;
+                } else {
+                    updateBalance(-bet);
+                    resultDiv.innerHTML = `Ракета дошла до ${randomCoefficient}. Ты проиграл, попробуй еще раз.`;
+                }
+            }, (randomCoefficient * 1000) + 500); // delay based on the random coefficient for the rocket to "fly"
+        }
+
+        window.onload = () => {
+            createChart();
+            updateBalance(0); // Initialize balance display
+            rocketImage = document.getElementById('rocket');
+        };
+    </script>
+</body>
+</html>
